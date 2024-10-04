@@ -46,4 +46,4 @@ SOAPAction: http://192.168.0.1/HNAP1/Login
   </soap:Body>
 </soap:Envelope>
 ```
-
+You can write exp to further obtain the root shell
