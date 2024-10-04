@@ -25,7 +25,6 @@ In HNAP's SetDCHPolicy function, by constructing MK, the program does not check 
 
 ![image](https://github.com/user-attachments/assets/eec2b9b7-309a-4bd8-a8cd-148e3cef7dd5)
 
-![image](https://github.com/user-attachments/assets/b26de367-7cd4-4f66-ade5-5dfa21a29ff2)
 
 
 ## POC
