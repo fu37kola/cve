@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/5e236003-0837-4eb2-8a67-5d7383f9b38a)# DCS-960L 1.09 Stack overflow
+# DCS-960L 1.09 Stack overflow
 
 ## Product Info
 
